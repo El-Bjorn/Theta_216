@@ -63,9 +63,25 @@
 
 #pragma mark - Networking wrapper methods
 
+-(void) getOptions:(NSArray*)opts withCompBlock:(void(^)(NSError*,NSArray*))bloc {
+    NSDictionary *postParam = @{ @"name": @"camera.getOptions",
+                                 @"parameters" : @{ @"sessionId": self.sessionId,
+                                                    @"optionNames": opts }};
+    [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {
+        NSArray *currOpts = [d valueForKeyPath:@"results.options"];
+        NSLog(@"get Options, err= %@ dict= %@",e,currOpts);
+        if (e==nil) { // we're golden
+            bloc(nil,currOpts);
+        } else {
+            bloc(e,nil);
+        }
+
+    }];
+}
+
 -(void) setOptions:(NSDictionary*)optsDict withCompBlock:(void(^)(NSError*))bloc {
     NSDictionary *postParam = @{ @"name": @"camera.setOptions",
-                                 @"parameters" :@{ @"sessionId": self.sessionId,
+                                 @"parameters" : @{ @"sessionId": self.sessionId,
                                                   @"options": optsDict }};
     [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {
         NSLog(@"setOptions, err= %@ dict= %@",e,d);
@@ -114,7 +130,7 @@
     
 }
 
-#pragma mark - All actual networking done below here
+#pragma mark - Low level basics. All actual networking done below here
 
 // This is the only GET
 #define INFO_REQ_PATH       @"/info"

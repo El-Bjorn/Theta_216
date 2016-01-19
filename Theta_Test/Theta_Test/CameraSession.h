@@ -16,4 +16,9 @@
 // This is the one and only approved way of making a CameraSession
 +(void) newCameraSessionWithBlock:(void(^)(CameraSession*))bloc;
 
+-(void) setOptions:(NSDictionary*)optsDict withCompBlock:(void(^)(NSError*))bloc;
+
+-(void) getOptions:(NSArray*)opts withCompBlock:(void(^)(NSError*,NSArray*))bloc;
+
+
 @end
