@@ -12,12 +12,53 @@
 
 #pragma mark - Setup Session
 
+// internal use only!
 -(instancetype) init {
     self = [super init];
     if (self) {
         self.ourURLSession = [NSURLSession sharedSession];
+        self.sessionId = nil;
     }
     return self;
+}
+
+
+// This factory method is the recommended way to start-a-session/create-an-object
++(void) newCameraSessionWithBlock:(void(^)(CameraSession*))bloc {
+    CameraSession *camSess = [[CameraSession alloc] init];
+    
+    if (camSess) { // so far so good
+        [camSess startSessionWithCompBlock:^(NSError *err) {
+            if (err == nil) {
+                bloc(camSess);
+            } else {
+                bloc(nil);
+            }
+        }];
+    } else { // things are f'd, return right away with nil
+        bloc(nil);
+    }
+}
+
+
+// starts a session, sets our sessionID property
+-(void) startSessionWithCompBlock:(void(^)(NSError*))bloc {
+    // check for existing sessionID (this should NEVER happen)
+    if (self.sessionId != nil) {
+        NSLog(@"starting session with existing session id, wtf is wrong with you!??!");
+        assert(0);
+    }
+    NSDictionary *postParm = @{ @"name": @"camera.startSession",
+                                @"parameters": @[] };
+    [self executePostRequestWithParams:postParm withCompBlock:^(NSError *e, NSDictionary *d) {
+        if (e == nil) { // all is well
+            self.sessionId = [d valueForKeyPath:@"results.sessionId"];
+            NSLog(@"sessionId set to %@", self.sessionId);
+            bloc(nil);
+        } else {
+            bloc(e);
+        }
+    }];
 }
 
 #pragma mark - Networking wrapper methods

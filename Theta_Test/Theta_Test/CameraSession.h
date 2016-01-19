@@ -13,4 +13,7 @@
 @property (nonatomic,strong) NSURLSession *ourURLSession;
 @property (nonatomic,strong) NSString *sessionId;
 
+// This is the one and only approved way of making a CameraSession
++(void) newCameraSessionWithBlock:(void(^)(CameraSession*))bloc;
+
 @end

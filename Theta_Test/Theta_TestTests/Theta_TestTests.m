@@ -38,6 +38,18 @@
     [super tearDown];
 }
 
+-(void) testNewCameraSession {
+    dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
+    [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
+        NSLog(@"Camera session: %@", camSess);
+        dispatch_semaphore_signal(wait_sema);
+    }];
+    // wait for semaphore
+    while (dispatch_semaphore_wait(wait_sema, DISPATCH_TIME_NOW)) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0]];
+    }
+}
+
 -(void) testCameraInfoReq {
     CameraSession *cs = [[CameraSession alloc] init];
     dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
