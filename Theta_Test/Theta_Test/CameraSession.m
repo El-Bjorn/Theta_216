@@ -48,9 +48,9 @@
         NSLog(@"starting session with existing session id, wtf is wrong with you!??!");
         assert(0);
     }
-    NSDictionary *postParm = @{ @"name": @"camera.startSession",
+    NSDictionary *postParam = @{ @"name": @"camera.startSession",
                                 @"parameters": @[] };
-    [self executePostRequestWithParams:postParm withCompBlock:^(NSError *e, NSDictionary *d) {
+    [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {
         if (e == nil) { // all is well
             self.sessionId = [d valueForKeyPath:@"results.sessionId"];
             NSLog(@"sessionId set to %@", self.sessionId);
@@ -62,6 +62,20 @@
 }
 
 #pragma mark - Networking wrapper methods
+
+-(void) setOptions:(NSDictionary*)optsDict withCompBlock:(void(^)(NSError*))bloc {
+    NSDictionary *postParam = @{ @"name": @"camera.setOptions",
+                                 @"parameters" :@{ @"sessionId": self.sessionId,
+                                                  @"options": optsDict }};
+    [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {
+        NSLog(@"setOptions, err= %@ dict= %@",e,d);
+        if (e==nil) { // we're golden
+            bloc(nil);
+        } else {
+            bloc(e);
+        }
+    }];
+}
 
 // POST requests
 #define EXECUTE_REQ_PATH    @"/commands/execute"

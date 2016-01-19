@@ -19,7 +19,7 @@
 -(void) executePostRequestWithParams:(NSDictionary*)params
                        withCompBlock:(void(^)(NSError*,NSDictionary*))bloc;
 
-
+-(void) setOptions:(NSDictionary*)optsDict withCompBlock:(void(^)(NSError*))bloc;
 @end
 
 @interface Theta_TestTests : XCTestCase
@@ -36,6 +36,25 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
+}
+
+-(void) testSetOptions {
+    dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
+    
+    [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
+        [camSess setOptions:@{ @"captureMode": @"image"} withCompBlock:^(NSError *e) {
+            NSLog(@"set capture mode: err: %@",e);
+            [camSess setOptions:@{ @"exposureProgram": @9, @"iso": @100 } withCompBlock:^(NSError *e) {
+                NSLog(@"set iso");
+                dispatch_semaphore_signal(wait_sema);
+            }];
+        }];
+    }];
+    // wait for semaphore
+    while (dispatch_semaphore_wait(wait_sema, DISPATCH_TIME_NOW)) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0]];
+    }
+
 }
 
 -(void) testNewCameraSession {
