@@ -23,6 +23,8 @@
 
 -(void) waitForPictureWithCompBlock:(void(^)(NSError*, NSString*))bloc;
 
+-(void) exposureTimeFromFileUri:(NSString*)fileUri withCompBlock:(void(^)(NSError*, NSNumber*))bloc;
+
 @end
 
 @interface Theta_TestTests : XCTestCase
@@ -39,6 +41,25 @@
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
+}
+
+-(void) testGetExposure {
+    dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
+    [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
+        NSLog(@"Camera session: %@", camSess);
+        [camSess waitForPictureWithCompBlock:^(NSError *e, NSString *s) {
+            NSString *fileUri = s;
+            NSLog(@"got fileUriId: %@", fileUri);
+            [camSess exposureTimeFromFileUri:fileUri withCompBlock:^(NSError *expe, NSNumber *expd) {
+                NSLog(@"exposure info: %@, err: %@",expd,expe);
+                dispatch_semaphore_signal(wait_sema);
+            }];
+        }];
+    }];
+    // wait for semaphore
+    while (dispatch_semaphore_wait(wait_sema, DISPATCH_TIME_NOW)) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0]];
+    }
 }
 
 -(void) testTakePicture {

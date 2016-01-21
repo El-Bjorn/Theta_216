@@ -61,7 +61,24 @@
     }];
 }
 
-#pragma mark - Networking wrapper methods
+#pragma mark - Picture Metadata
+
+-(void) exposureTimeFromFileUri:(NSString*)fileUri withCompBlock:(void(^)(NSError*, NSNumber*))bloc {
+    NSDictionary *postParam = @{ @"name": @"camera.getMetadata",
+                                 @"parameters": @{ @"fileUri": fileUri }};
+    [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {
+        NSLog(@"exposure info: %@, err: %@",d,e);
+        if (e == nil) {
+            NSNumber *expTime = [d valueForKeyPath:@"results.exif.ExposureTime"];
+            bloc(nil,expTime);
+        } else {
+            bloc(e,nil);
+        }
+    }];
+    
+}
+
+#pragma mark - Taking a picture
 
 // returns fileUri in block
 -(void) waitForPictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
@@ -103,6 +120,8 @@
         }
     }];
 }
+
+#pragma mark - Options
 
 -(void) getOptions:(NSArray*)opts withCompBlock:(void(^)(NSError*,NSArray*))bloc {
     NSDictionary *postParam = @{ @"name": @"camera.getOptions",
