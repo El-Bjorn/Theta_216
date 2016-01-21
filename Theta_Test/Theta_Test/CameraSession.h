@@ -10,15 +10,19 @@
 
 @interface CameraSession : NSObject
 
-@property (nonatomic,strong) NSURLSession *ourURLSession;
-@property (nonatomic,strong) NSString *sessionId;
+#pragma mark - Recommended api
 
 // This is the one and only approved way of making a CameraSession
 +(void) newCameraSessionWithBlock:(void(^)(CameraSession*))bloc;
 
 -(void) setOptions:(NSDictionary*)optsDict withCompBlock:(void(^)(NSError*))bloc;
-
 -(void) getOptions:(NSArray*)opts withCompBlock:(void(^)(NSError*,NSArray*))bloc;
+
+
+#pragma mark - You shouldn't need the stuff below, but it's here just in case
+
+@property (nonatomic,strong) NSURLSession *ourURLSession;
+@property (nonatomic,strong) NSString *sessionId;
 
 
 @end

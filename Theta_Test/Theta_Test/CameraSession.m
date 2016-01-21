@@ -63,6 +63,47 @@
 
 #pragma mark - Networking wrapper methods
 
+// returns fileUri in block
+-(void) waitForPictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
+    [self takePictureWithCompBlock:^(NSError *takeErr, NSString *commId) {
+        if (takeErr != nil) {
+            bloc(takeErr, nil); // error returns right away
+        } else {
+            // wait around for our command to be done
+            [self waitForCommand:commId withCompBlock:bloc];
+        }
+    }];
+}
+
+
+-(void) waitForCommand:(NSString*)commId withCompBlock:(void(^)(NSError*, NSString*))bloc {
+    [self statusPostRequestWithParmams:@{ @"id":commId} withCompBlock:^(NSError *e, NSDictionary *d) {
+        if (e != nil) {
+            bloc(e,nil);
+        } else if ([[d valueForKey:@"state"] isEqualToString:@"done"]){
+            NSString *fileUri = [d valueForKeyPath:@"results.fileUri"];
+            bloc(nil,fileUri);
+        } else { // not done yet
+            [self waitForCommand:commId withCompBlock:bloc];
+        }
+    }];
+}
+
+// returns command id
+-(void) takePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
+    NSDictionary *postParam = @{ @"name": @"camera.takePicture",
+                                 @"parameters": @{ @"sessionId": self.sessionId }};
+    [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {
+        NSLog(@"take pic, err= %@  dict= %@",e,d);
+        if (e == nil) {
+            NSString *commId = [d valueForKey:@"id"];
+            bloc(nil,commId);
+        } else {
+            bloc(e,nil);
+        }
+    }];
+}
+
 -(void) getOptions:(NSArray*)opts withCompBlock:(void(^)(NSError*,NSArray*))bloc {
     NSDictionary *postParam = @{ @"name": @"camera.getOptions",
                                  @"parameters" : @{ @"sessionId": self.sessionId,
@@ -92,6 +133,8 @@
         }
     }];
 }
+
+#pragma mark - General request types (these call the low level methods)
 
 // POST requests
 #define EXECUTE_REQ_PATH    @"/commands/execute"
