@@ -80,9 +80,9 @@
 
 #pragma mark - Taking a picture
 
-// returns fileUri in block
--(void) waitForPictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
-    [self takePictureWithCompBlock:^(NSError *takeErr, NSString *commId) {
+// sends the command, waits for results and returns fileUri in bloc
+-(void) takePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
+    [self execTakePictureWithCompBlock:^(NSError *takeErr, NSString *commId) {
         if (takeErr != nil) {
             bloc(takeErr, nil); // error returns right away
         } else {
@@ -106,8 +106,8 @@
     }];
 }
 
-// returns command id
--(void) takePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
+// Just gives the command and returns the command id (no waiting)
+-(void) execTakePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc {
     NSDictionary *postParam = @{ @"name": @"camera.takePicture",
                                  @"parameters": @{ @"sessionId": self.sessionId }};
     [self executePostRequestWithParams:postParam withCompBlock:^(NSError *e, NSDictionary *d) {

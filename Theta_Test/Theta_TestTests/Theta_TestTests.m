@@ -21,7 +21,7 @@
 
 //-(void) takePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc;
 
--(void) waitForPictureWithCompBlock:(void(^)(NSError*, NSString*))bloc;
+//-(void) takePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc;
 
 -(void) exposureTimeFromFileUri:(NSString*)fileUri withCompBlock:(void(^)(NSError*, NSNumber*))bloc;
 
@@ -47,7 +47,7 @@
     dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
     [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
         NSLog(@"Camera session: %@", camSess);
-        [camSess waitForPictureWithCompBlock:^(NSError *e, NSString *s) {
+        [camSess takePictureWithCompBlock:^(NSError *e, NSString *s) {
             NSString *fileUri = s;
             NSLog(@"got fileUriId: %@", fileUri);
             [camSess exposureTimeFromFileUri:fileUri withCompBlock:^(NSError *expe, NSNumber *expd) {
@@ -66,7 +66,7 @@
     dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
     [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
         NSLog(@"Camera session: %@", camSess);
-        [camSess waitForPictureWithCompBlock:^(NSError *e, NSString *s) {
+        [camSess takePictureWithCompBlock:^(NSError *e, NSString *s) {
             NSLog(@"got fileUriId: %@", s);
             dispatch_semaphore_signal(wait_sema);
         }];
