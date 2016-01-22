@@ -63,6 +63,42 @@
 
 #pragma mark - Picture Metadata
 
+// sets options(program=9,iso=100), takes a picture, returns exposure as NSNumber
+-(void) findOptimalExposureTimeWithCompBlock:(void(^)(NSError*,NSNumber*))bloc {
+    [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
+        [camSess setOptions:@{ @"captureMode": @"image"} withCompBlock:^(NSError *e1) {
+            NSLog(@"set capture mode: err: %@",e1);
+            if (e1 != nil) {
+                bloc(e1,nil);
+                return;
+            }
+            [camSess setOptions:@{ @"exposureProgram": @9, @"iso": @100 } withCompBlock:^(NSError *e2) {
+                NSLog(@"set iso");
+                if (e2 != nil) {
+                    bloc(e2,nil);
+                    return;
+                }
+                [camSess takePictureWithCompBlock:^(NSError *e3, NSString *s) {
+                    NSLog(@"got fileUriId: %@", s);
+                    if (e3 != nil) {
+                        bloc(e3,nil);
+                        return;
+                    }
+                    [camSess exposureTimeFromFileUri:s withCompBlock:^(NSError *e4, NSNumber *n) {
+                        if (e4 != nil) {
+                            bloc(e4,nil);
+                            return;
+                        }
+                        bloc(e4,n);
+                    }];
+                }];                
+            }];
+        }];
+    }];
+
+    
+}
+
 -(void) exposureTimeFromFileUri:(NSString*)fileUri withCompBlock:(void(^)(NSError*, NSNumber*))bloc {
     NSDictionary *postParam = @{ @"name": @"camera.getMetadata",
                                  @"parameters": @{ @"fileUri": fileUri }};

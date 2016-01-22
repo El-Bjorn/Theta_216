@@ -21,8 +21,7 @@
 // waits for completion and returns fileUri in the bloc
 -(void) takePictureWithCompBlock:(void(^)(NSError*, NSString*))bloc;
 
-// exposures comes bakc in ns
--(void) exposureTimeFromFileUri:(NSString*)fileUri withCompBlock:(void(^)(NSError*, NSNumber*))bloc;
+-(void) findOptimalExposureTimeWithCompBlock:(void(^)(NSError*,NSNumber*))bloc;
 
 
 #pragma mark - You shouldn't need the stuff below, but it's here just in case

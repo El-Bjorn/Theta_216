@@ -43,6 +43,21 @@
     [super tearDown];
 }
 
+-(void) testGetOptimalExposure {
+    dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
+    [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
+        NSLog(@"Camera session: %@", camSess);
+        [camSess findOptimalExposureTimeWithCompBlock:^(NSError *e, NSNumber *n) {
+            NSLog(@"find opt exposure, err=%@, exp=%@",e,n);
+            dispatch_semaphore_signal(wait_sema);
+        }];
+    }];
+    // wait for semaphore
+    while (dispatch_semaphore_wait(wait_sema, DISPATCH_TIME_NOW)) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0]];
+    }
+}
+
 -(void) testGetExposure {
     dispatch_semaphore_t wait_sema = dispatch_semaphore_create(0);
     [CameraSession newCameraSessionWithBlock:^(CameraSession *camSess) {
